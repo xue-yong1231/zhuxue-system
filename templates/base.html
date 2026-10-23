@@ -20,11 +20,13 @@
           <a href="{{ url_for('admin.dashboard') }}">管理后台</a>
         {% endif %}
         {% if current_user.is_authenticated %}
-          <span class="nav-user">{{ current_user.username }}</span>
+          <a href="{{ url_for('auth.account') }}" class="nav-user-link" title="账号设置">{{ current_user.username }}</a>
+          <a href="{{ url_for('auth.account') }}">账号设置</a>
           <a href="{{ url_for('auth.logout') }}">退出</a>
         {% else %}
           <a class="btn btn-small" href="{{ url_for('auth.login') }}">登录</a>
         {% endif %}
+
       </nav>
     </div>
   </header>

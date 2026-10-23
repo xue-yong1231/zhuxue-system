@@ -91,9 +91,19 @@ a:hover {
   color: var(--teal);
 }
 
-.nav-user {
+.nav-user,
+.nav-user-link {
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.nav-user-link:hover {
+  color: var(--teal);
+  text-decoration: none;
+}
+
+.auth-card-wide {
+  width: min(480px, 100%);
 }
 
 .main-content {

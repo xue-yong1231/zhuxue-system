@@ -80,20 +80,23 @@ def create_app() -> Flask:
 
 
 def _ensure_admin(app: Flask) -> None:
+    """仅在系统中尚无管理员时，用环境变量预置一个；之后以数据库为准，避免覆盖用户自行修改的账号密码。"""
     from app.models import User
+
+    if User.query.filter_by(role="admin").first() is not None:
+        return
 
     username = app.config["ADMIN_USERNAME"]
     password = app.config["ADMIN_PASSWORD"]
-    admin = User.query.filter_by(username=username).first()
-    if admin is None:
+    existing = User.query.filter_by(username=username).first()
+    if existing is None:
         admin = User(username=username, role="admin")
         admin.set_password(password)
         db.session.add(admin)
-        db.session.commit()
-    elif not admin.check_password(password):
-        admin.set_password(password)
-        admin.role = "admin"
-        db.session.commit()
+    else:
+        existing.role = "admin"
+        existing.set_password(password)
+    db.session.commit()
 
 
 def _seed_sample_questions() -> None:
