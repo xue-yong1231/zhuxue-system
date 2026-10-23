@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}批量导入 · {{ category.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('admin.item_list', category_id=category.id) }}">← 返回内容列表</a>
+<section class="form-page">
+  <h1>批量导入 · {{ category.name }}</h1>
+  <p class="muted">把名句/成语连同翻译、解释一次性粘贴进来。也可发给 AI 助手帮你整理后粘贴。</p>
+
+  <div class="admin-section" style="margin:1rem 0;">
+    <h2 style="margin-top:0;font-size:1rem;">格式说明（任选一种）</h2>
+    <p class="muted">方式 A：一行一条，用竖线分隔</p>
+    <pre class="code-sample">守株待兔|比喻不劳而获、心存侥幸|出自《韩非子》
+亡羊补牢|出了问题及时补救还来得及|出自《战国策》</pre>
+    <p class="muted">方式 B：分块，空行或 --- 分隔</p>
+    <pre class="code-sample">正文：学而时习之，不亦说乎？
+翻译：学过的知识按时温习，不也愉快吗？
+解释：出自《论语·学而》
+
+正文：三人行，必有我师焉。
+翻译：几人同行，必有可做我老师的人。
+解释：出自《论语·述而》</pre>
+  </div>
+
+  <form method="post" class="stack-form wide-form">
+    <label>
+      粘贴内容
+      <textarea name="raw_text" rows="16" required placeholder="在此粘贴…">{{ raw_text }}</textarea>
+    </label>
+    <div class="form-actions">
+      <button type="submit" name="action" value="preview" class="btn btn-ghost">先预览</button>
+      <button type="submit" name="action" value="import" class="btn">确认导入</button>
+    </div>
+  </form>
+
+  {% if preview %}
+  <section class="admin-section" style="margin-top:1.2rem;">
+    <h2 style="margin-top:0;">预览（{{ preview|length }} 条）</h2>
+    {% for row in preview %}
+    <div class="learn-block">
+      <strong>{{ loop.index }}. {{ row.content }}</strong>
+      {% if row.translation %}<p>翻译：{{ row.translation }}</p>{% endif %}
+      {% if row.explanation %}<p>解释：{{ row.explanation }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

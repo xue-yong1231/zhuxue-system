@@ -70,27 +70,98 @@ def learn_view(slug: str, category_id: int):
 
 @main_bp.route("/subjects/<slug>/practice")
 def practice_home(slug: str):
+    """练习与学习一样：先选分类（名句 / 文学常识 / 成语…）。"""
     subject = Subject.query.filter_by(slug=slug).first_or_404()
-    total = PracticeQuestion.query.filter_by(subject_id=subject.id).count()
-    return render_template("practice_home.html", subject=subject, total=total)
+    categories = (
+        LearnCategory.query.filter_by(subject_id=subject.id)
+        .order_by(LearnCategory.sort_order, LearnCategory.id)
+        .all()
+    )
+    return render_template(
+        "practice_home.html", subject=subject, categories=categories
+    )
 
 
-@main_bp.route("/subjects/<slug>/practice/<int:question_id>", methods=["GET", "POST"])
-def practice_question(slug: str, question_id: int):
+@main_bp.route("/subjects/<slug>/practice/cat/<int:category_id>")
+def practice_category(slug: str, category_id: int):
     subject = Subject.query.filter_by(slug=slug).first_or_404()
+    category = LearnCategory.query.filter_by(
+        id=category_id, subject_id=subject.id
+    ).first_or_404()
+    total = PracticeQuestion.query.filter_by(
+        subject_id=subject.id, category_id=category.id
+    ).count()
+    return render_template(
+        "practice_category.html",
+        subject=subject,
+        category=category,
+        total=total,
+    )
+
+
+@main_bp.route("/subjects/<slug>/practice/cat/<int:category_id>/start")
+def practice_start(slug: str, category_id: int):
+    subject = Subject.query.filter_by(slug=slug).first_or_404()
+    category = LearnCategory.query.filter_by(
+        id=category_id, subject_id=subject.id
+    ).first_or_404()
+    first = (
+        PracticeQuestion.query.filter_by(
+            subject_id=subject.id, category_id=category.id
+        )
+        .order_by(PracticeQuestion.id)
+        .first()
+    )
+    if first is None:
+        flash("该分类暂无练习题，请等待房主出题。", "info")
+        return redirect(
+            url_for(
+                "main.practice_category",
+                slug=slug,
+                category_id=category.id,
+            )
+        )
+    return redirect(
+        url_for(
+            "main.practice_question",
+            slug=slug,
+            category_id=category.id,
+            question_id=first.id,
+        )
+    )
+
+
+@main_bp.route(
+    "/subjects/<slug>/practice/cat/<int:category_id>/<int:question_id>",
+    methods=["GET", "POST"],
+)
+def practice_question(slug: str, category_id: int, question_id: int):
+    subject = Subject.query.filter_by(slug=slug).first_or_404()
+    category = LearnCategory.query.filter_by(
+        id=category_id, subject_id=subject.id
+    ).first_or_404()
     questions = (
-        PracticeQuestion.query.filter_by(subject_id=subject.id)
+        PracticeQuestion.query.filter_by(
+            subject_id=subject.id, category_id=category.id
+        )
         .order_by(PracticeQuestion.id)
         .all()
     )
     if not questions:
         flash("暂无练习题。", "info")
-        return redirect(url_for("main.practice_home", slug=slug))
+        return redirect(
+            url_for("main.practice_category", slug=slug, category_id=category.id)
+        )
 
     ids = [q.id for q in questions]
     if question_id not in ids:
         return redirect(
-            url_for("main.practice_question", slug=slug, question_id=ids[0])
+            url_for(
+                "main.practice_question",
+                slug=slug,
+                category_id=category.id,
+                question_id=ids[0],
+            )
         )
 
     question = next(q for q in questions if q.id == question_id)
@@ -111,6 +182,7 @@ def practice_question(slug: str, question_id: int):
     return render_template(
         "practice_question.html",
         subject=subject,
+        category=category,
         question=question,
         index=index + 1,
         total=len(questions),
@@ -118,20 +190,4 @@ def practice_question(slug: str, question_id: int):
         chosen=chosen,
         next_id=next_id,
         prev_id=prev_id,
-    )
-
-
-@main_bp.route("/subjects/<slug>/practice/start")
-def practice_start(slug: str):
-    subject = Subject.query.filter_by(slug=slug).first_or_404()
-    first = (
-        PracticeQuestion.query.filter_by(subject_id=subject.id)
-        .order_by(PracticeQuestion.id)
-        .first()
-    )
-    if first is None:
-        flash("暂无练习题，请等待房主出题。", "info")
-        return redirect(url_for("main.practice_home", slug=slug))
-    return redirect(
-        url_for("main.practice_question", slug=slug, question_id=first.id)
     )

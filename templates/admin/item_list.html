@@ -9,7 +9,10 @@
     <h1>学习内容</h1>
     <p class="muted">学生将一页一条看到这些内容，下方显示翻译与解释。</p>
   </div>
-  <a class="btn" href="{{ url_for('admin.item_create', category_id=category.id) }}">添加内容</a>
+  <div class="form-actions">
+    <a class="btn" href="{{ url_for('admin.item_create', category_id=category.id) }}">添加一条</a>
+    <a class="btn btn-ghost" href="{{ url_for('admin.item_bulk_import', category_id=category.id) }}">批量导入</a>
+  </div>
 </section>
 
 {% if items %}

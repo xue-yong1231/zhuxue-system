@@ -689,6 +689,17 @@ textarea {
   max-width: 640px;
 }
 
+.code-sample {
+  background: rgba(22, 50, 79, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
 .form-page h1 {
   margin-bottom: 0.4rem;
 }

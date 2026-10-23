@@ -12,6 +12,7 @@ from flask import (
 from flask_login import current_user, login_required
 
 from app import db
+from app.bulk_import import parse_learn_items
 from app.models import LearnCategory, LearnItem, PracticeQuestion, Subject
 
 admin_bp = Blueprint("admin", __name__)
@@ -193,6 +194,51 @@ def item_delete(item_id: int):
     return redirect(url_for("admin.item_list", category_id=category_id))
 
 
+@admin_bp.route("/categories/<int:category_id>/items/bulk", methods=["GET", "POST"])
+@admin_required
+def item_bulk_import(category_id: int):
+    category = LearnCategory.query.get_or_404(category_id)
+    preview = None
+    if request.method == "POST":
+        raw = request.form.get("raw_text") or ""
+        parsed = parse_learn_items(raw)
+        action = request.form.get("action") or "preview"
+        if not parsed:
+            flash("没有解析到有效内容，请检查格式。", "danger")
+        elif action == "preview":
+            preview = parsed
+            flash(f"预览：共解析到 {len(parsed)} 条，确认无误后点「确认导入」。", "info")
+        else:
+            start = LearnItem.query.filter_by(category_id=category.id).count()
+            for i, row in enumerate(parsed):
+                db.session.add(
+                    LearnItem(
+                        category_id=category.id,
+                        content=row["content"],
+                        translation=row["translation"],
+                        explanation=row["explanation"],
+                        sort_order=start + i,
+                    )
+                )
+            db.session.commit()
+            flash(f"已成功导入 {len(parsed)} 条学习内容。", "success")
+            return redirect(url_for("admin.item_list", category_id=category.id))
+        return render_template(
+            "admin/item_bulk.html",
+            subject=category.subject,
+            category=category,
+            raw_text=raw,
+            preview=preview,
+        )
+    return render_template(
+        "admin/item_bulk.html",
+        subject=category.subject,
+        category=category,
+        raw_text="",
+        preview=None,
+    )
+
+
 def _build_item_from_form(
     category_id: int, item: LearnItem | None = None
 ) -> LearnItem | None:
@@ -217,12 +263,18 @@ def _build_item_from_form(
 @admin_required
 def practice_create(subject_id: int):
     subject = Subject.query.get_or_404(subject_id)
+    categories = (
+        LearnCategory.query.filter_by(subject_id=subject.id)
+        .order_by(LearnCategory.sort_order, LearnCategory.id)
+        .all()
+    )
     if request.method == "POST":
         question = _build_practice_from_form(subject_id=subject.id)
         if question is None:
             return render_template(
                 "admin/practice_form.html",
                 subject=subject,
+                categories=categories,
                 question=None,
                 mode="create",
             )
@@ -231,7 +283,11 @@ def practice_create(subject_id: int):
         flash("练习题已创建。", "success")
         return redirect(url_for("admin.subject_manage", subject_id=subject.id))
     return render_template(
-        "admin/practice_form.html", subject=subject, question=None, mode="create"
+        "admin/practice_form.html",
+        subject=subject,
+        categories=categories,
+        question=None,
+        mode="create",
     )
 
 
@@ -240,12 +296,18 @@ def practice_create(subject_id: int):
 def practice_edit(question_id: int):
     question = PracticeQuestion.query.get_or_404(question_id)
     subject = question.subject
+    categories = (
+        LearnCategory.query.filter_by(subject_id=subject.id)
+        .order_by(LearnCategory.sort_order, LearnCategory.id)
+        .all()
+    )
     if request.method == "POST":
         updated = _build_practice_from_form(subject_id=subject.id, question=question)
         if updated is None:
             return render_template(
                 "admin/practice_form.html",
                 subject=subject,
+                categories=categories,
                 question=question,
                 mode="edit",
             )
@@ -253,7 +315,11 @@ def practice_edit(question_id: int):
         flash("练习题已更新。", "success")
         return redirect(url_for("admin.subject_manage", subject_id=subject.id))
     return render_template(
-        "admin/practice_form.html", subject=subject, question=question, mode="edit"
+        "admin/practice_form.html",
+        subject=subject,
+        categories=categories,
+        question=question,
+        mode="edit",
     )
 
 
@@ -278,6 +344,17 @@ def _build_practice_from_form(
     option_d = (request.form.get("option_d") or "").strip()
     correct = (request.form.get("correct") or "A").upper().strip()
     explanation = (request.form.get("explanation") or "").strip()
+    category_id = request.form.get("category_id", type=int)
+
+    if not category_id:
+        flash("请选择所属分类（名句 / 文学常识 / 成语等）。", "danger")
+        return None
+    category = LearnCategory.query.filter_by(
+        id=category_id, subject_id=subject_id
+    ).first()
+    if category is None:
+        flash("分类无效。", "danger")
+        return None
 
     if not stem or not all([option_a, option_b, option_c, option_d]):
         flash("题干与四个选项都不能为空。", "danger")
@@ -289,6 +366,7 @@ def _build_practice_from_form(
     if question is None:
         question = PracticeQuestion(subject_id=subject_id)
 
+    question.category_id = category.id
     question.stem = stem
     question.option_a = option_a
     question.option_b = option_b

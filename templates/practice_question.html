@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}练习 {{ index }}/{{ total }} · {{ subject.name }}{% endblock %}
+{% block title %}练习 {{ index }}/{{ total }} · {{ category.name }}{% endblock %}
 
 {% block content %}
-<a class="back-link" href="{{ url_for('main.practice_home', slug=subject.slug) }}">← 返回练习首页</a>
+<a class="back-link" href="{{ url_for('main.practice_category', slug=subject.slug, category_id=category.id) }}">← 返回 {{ category.name }}</a>
 
 <article class="practice-card">
-  <div class="learn-progress">第 {{ index }} / {{ total }} 题</div>
+  <div class="learn-progress">{{ category.name }} · 第 {{ index }} / {{ total }} 题</div>
   <h1 class="practice-stem">{{ question.stem }}</h1>
 
   {% if result is none %}
@@ -45,12 +45,12 @@
 
   <div class="learn-nav">
     {% if prev_id %}
-    <a class="btn btn-ghost" href="{{ url_for('main.practice_question', slug=subject.slug, question_id=prev_id) }}">上一题</a>
+    <a class="btn btn-ghost" href="{{ url_for('main.practice_question', slug=subject.slug, category_id=category.id, question_id=prev_id) }}">上一题</a>
     {% endif %}
     {% if next_id %}
-    <a class="btn" href="{{ url_for('main.practice_question', slug=subject.slug, question_id=next_id) }}">下一题</a>
+    <a class="btn" href="{{ url_for('main.practice_question', slug=subject.slug, category_id=category.id, question_id=next_id) }}">下一题</a>
     {% else %}
-    <a class="btn" href="{{ url_for('main.practice_home', slug=subject.slug) }}">完成练习</a>
+    <a class="btn" href="{{ url_for('main.practice_category', slug=subject.slug, category_id=category.id) }}">完成练习</a>
     {% endif %}
   </div>
   {% endif %}

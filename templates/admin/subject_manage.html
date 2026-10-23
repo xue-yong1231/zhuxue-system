@@ -39,24 +39,25 @@
     </tbody>
   </table>
   {% else %}
-  <p class="muted">还没有分类。例如语文可建「名句」「文学常识」。</p>
+  <p class="muted">还没有分类。语文默认会有「名句」「文学常识」「成语」。</p>
   {% endif %}
 </section>
 
 <section class="admin-section">
   <div class="admin-section-head">
-    <h2>练习题（四选一）</h2>
+    <h2>练习题（四选一，按分类）</h2>
     <a class="btn btn-small" href="{{ url_for('admin.practice_create', subject_id=subject.id) }}">新建练习题</a>
   </div>
   {% if practices %}
   <table class="admin-table">
     <thead>
-      <tr><th>题干</th><th>答案</th><th>操作</th></tr>
+      <tr><th>分类</th><th>题干</th><th>答案</th><th>操作</th></tr>
     </thead>
     <tbody>
       {% for q in practices %}
       <tr>
-        <td>{{ q.stem[:60] }}{% if q.stem|length > 60 %}…{% endif %}</td>
+        <td>{{ q.category.name if q.category else '未分类' }}</td>
+        <td>{{ q.stem[:50] }}{% if q.stem|length > 50 %}…{% endif %}</td>
         <td>{{ q.correct }}</td>
         <td class="actions">
           <a href="{{ url_for('admin.practice_edit', question_id=q.id) }}">编辑</a>
@@ -69,7 +70,7 @@
     </tbody>
   </table>
   {% else %}
-  <p class="muted">还没有练习题。</p>
+  <p class="muted">还没有练习题。新建时请选择「名句 / 文学常识 / 成语」等分类。</p>
   {% endif %}
 </section>
 {% endblock %}

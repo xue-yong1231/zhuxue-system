@@ -67,6 +67,12 @@ class LearnCategory(db.Model):
         cascade="all, delete-orphan",
         order_by="LearnItem.sort_order",
     )
+    practices = db.relationship(
+        "PracticeQuestion",
+        back_populates="category",
+        cascade="all, delete-orphan",
+        order_by="PracticeQuestion.id",
+    )
 
 
 class LearnItem(db.Model):
@@ -91,12 +97,15 @@ class LearnItem(db.Model):
 
 
 class PracticeQuestion(db.Model):
-    """练习：四选一选择题。"""
+    """练习：四选一选择题（按学习分类，如名句/成语）。"""
 
     __tablename__ = "practice_questions"
 
     id = db.Column(db.Integer, primary_key=True)
     subject_id = db.Column(db.Integer, db.ForeignKey("subjects.id"), nullable=False)
+    category_id = db.Column(
+        db.Integer, db.ForeignKey("learn_categories.id"), nullable=True
+    )
     stem = db.Column(db.Text, nullable=False)
     option_a = db.Column(db.String(500), nullable=False)
     option_b = db.Column(db.String(500), nullable=False)
@@ -110,6 +119,7 @@ class PracticeQuestion(db.Model):
     )
 
     subject = db.relationship("Subject", back_populates="practices")
+    category = db.relationship("LearnCategory", back_populates="practices")
 
     def options(self) -> list[tuple[str, str]]:
         return [

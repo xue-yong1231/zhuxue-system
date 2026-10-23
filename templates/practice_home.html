@@ -5,16 +5,23 @@
 <a class="back-link" href="{{ url_for('main.subject_home', slug=subject.slug) }}">← 返回 {{ subject.name }}</a>
 <section class="hero">
   <p class="eyebrow">{{ subject.name }} · 练习</p>
-  <h1>选择题练习</h1>
-  <p class="lead">共 {{ total }} 道题。每题四个选项，选完后会显示对错与解析。</p>
+  <h1>选择分类</h1>
+  <p class="lead">与学习相同：先选名句 / 文学常识 / 成语等分类，再做该分类下的四选一题目。</p>
 </section>
 
-{% if total > 0 %}
-<a class="btn" href="{{ url_for('main.practice_start', slug=subject.slug) }}">开始练习</a>
+{% if categories %}
+<section class="category-list">
+  {% for c in categories %}
+  <a class="category-row" href="{{ url_for('main.practice_category', slug=subject.slug, category_id=c.id) }}">
+    <h2>{{ c.name }}</h2>
+    <p>{{ c.practices|length }} 道练习题</p>
+  </a>
+  {% endfor %}
+</section>
 {% else %}
 <div class="empty-state">
-  <h2>暂无练习题</h2>
-  <p>请房主登录后台，在「{{ subject.name }}」下添加四选一题目。</p>
+  <h2>暂无分类</h2>
+  <p>请房主先在后台创建学习分类。</p>
 </div>
 {% endif %}
 {% endblock %}

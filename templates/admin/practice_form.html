@@ -5,8 +5,18 @@
 <a class="back-link" href="{{ url_for('admin.subject_manage', subject_id=subject.id) }}">← 返回 {{ subject.name }}</a>
 <section class="form-page">
   <h1>{% if mode == 'create' %}新建练习题{% else %}编辑练习题{% endif %}</h1>
-  <p class="muted">四选一：填写题干、四个选项，并指定正确答案。</p>
+  <p class="muted">先选分类（名句 / 文学常识 / 成语等），再填写四选一题目。</p>
   <form method="post" class="stack-form wide-form">
+    <label>
+      所属分类
+      {% set cid = question.category_id if question else none %}
+      <select name="category_id" required>
+        <option value="">请选择</option>
+        {% for c in categories %}
+        <option value="{{ c.id }}" {% if cid == c.id %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
     <label>
       题干
       <textarea name="stem" rows="4" required placeholder="请输入题目…">{{ question.stem if question else '' }}</textarea>

@@ -83,11 +83,28 @@ def create_app() -> Flask:
 
     with app.app_context():
         db.create_all()
+        _ensure_schema()
         _ensure_admin(app)
         _seed_subjects()
+        _ensure_chinese_categories()
         _seed_demo_content()
 
     return app
+
+
+def _ensure_schema() -> None:
+    """为已有 SQLite 库补齐新列（create_all 不会改旧表结构）。"""
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(db.engine)
+    if "practice_questions" not in inspector.get_table_names():
+        return
+    cols = {c["name"] for c in inspector.get_columns("practice_questions")}
+    if "category_id" not in cols:
+        db.session.execute(
+            text("ALTER TABLE practice_questions ADD COLUMN category_id INTEGER")
+        )
+        db.session.commit()
 
 
 def _ensure_admin(app: Flask) -> None:
@@ -122,6 +139,27 @@ def _seed_subjects() -> None:
     db.session.commit()
 
 
+def _ensure_chinese_categories() -> None:
+    """保证语文下始终有：名句、文学常识、成语。"""
+    from app.models import LearnCategory, Subject
+
+    chinese = Subject.query.filter_by(slug="chinese").first()
+    if chinese is None:
+        return
+    defaults = [("名句", 0), ("文学常识", 1), ("成语", 2)]
+    for name, order in defaults:
+        exists = LearnCategory.query.filter_by(
+            subject_id=chinese.id, name=name
+        ).first()
+        if exists is None:
+            db.session.add(
+                LearnCategory(subject_id=chinese.id, name=name, sort_order=order)
+            )
+        else:
+            exists.sort_order = order
+    db.session.commit()
+
+
 def _seed_demo_content() -> None:
     """首次启动时给语文放一点示例，方便立刻体验流程。"""
     from app.models import LearnCategory, LearnItem, PracticeQuestion, Subject
@@ -129,13 +167,17 @@ def _seed_demo_content() -> None:
     chinese = Subject.query.filter_by(slug="chinese").first()
     if chinese is None:
         return
-    if LearnCategory.query.filter_by(subject_id=chinese.id).count() > 0:
+    if LearnItem.query.join(LearnCategory).filter(
+        LearnCategory.subject_id == chinese.id
+    ).count() > 0:
         return
 
-    mingju = LearnCategory(subject_id=chinese.id, name="名句", sort_order=0)
-    changshi = LearnCategory(subject_id=chinese.id, name="文学常识", sort_order=1)
-    db.session.add_all([mingju, changshi])
-    db.session.flush()
+    _ensure_chinese_categories()
+    mingju = LearnCategory.query.filter_by(subject_id=chinese.id, name="名句").first()
+    changshi = LearnCategory.query.filter_by(
+        subject_id=chinese.id, name="文学常识"
+    ).first()
+    chengyu = LearnCategory.query.filter_by(subject_id=chinese.id, name="成语").first()
 
     db.session.add_all(
         [
@@ -160,21 +202,42 @@ def _seed_demo_content() -> None:
                 explanation="中国古典四大名著之一，清代长篇小说。",
                 sort_order=0,
             ),
+            LearnItem(
+                category_id=chengyu.id,
+                content="守株待兔",
+                translation="比喻不主动努力，而存万一的侥幸心理，希望得到意外的收获。",
+                explanation="出自《韩非子》。株：树桩。",
+                sort_order=0,
+            ),
         ]
     )
 
     if PracticeQuestion.query.filter_by(subject_id=chinese.id).count() == 0:
-        db.session.add(
-            PracticeQuestion(
-                subject_id=chinese.id,
-                stem="“学而时习之，不亦说乎？”出自哪部著作？",
-                option_a="《孟子》",
-                option_b="《论语》",
-                option_c="《大学》",
-                option_d="《中庸》",
-                correct="B",
-                explanation="这是《论语·学而》中的名句。",
-            )
+        db.session.add_all(
+            [
+                PracticeQuestion(
+                    subject_id=chinese.id,
+                    category_id=mingju.id,
+                    stem="“学而时习之，不亦说乎？”出自哪部著作？",
+                    option_a="《孟子》",
+                    option_b="《论语》",
+                    option_c="《大学》",
+                    option_d="《中庸》",
+                    correct="B",
+                    explanation="这是《论语·学而》中的名句。",
+                ),
+                PracticeQuestion(
+                    subject_id=chinese.id,
+                    category_id=chengyu.id,
+                    stem="“守株待兔”常用来比喻什么？",
+                    option_a="勤劳致富",
+                    option_b="不劳而获、心存侥幸",
+                    option_c="团结合作",
+                    option_d="刻苦读书",
+                    correct="B",
+                    explanation="成语比喻不主动努力而希望意外收获。",
+                ),
+            ]
         )
 
     db.session.commit()
