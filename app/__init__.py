@@ -88,6 +88,9 @@ def create_app() -> Flask:
         _seed_subjects()
         _ensure_chinese_categories()
         _seed_demo_content()
+        from app.content_sync import sync_content_files
+
+        sync_content_files()
 
     return app
 

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import re
 
+from app.content_sync import parse_colon_lines
+
 
 def parse_learn_items(raw: str) -> list[dict[str, str]]:
     """
@@ -22,6 +24,15 @@ def parse_learn_items(raw: str) -> list[dict[str, str]]:
         return []
 
     items: list[dict[str, str]] = []
+
+    # 「词语：含义」一行一条（与根目录内容文件相同）
+    lines_probe = [ln.strip() for ln in text.split("\n") if ln.strip() and not ln.strip().startswith("#")]
+    if lines_probe and all(
+        (":" in ln or "：" in ln) and "|" not in ln for ln in lines_probe
+    ):
+        colon_items = parse_colon_lines(text)
+        if colon_items:
+            return colon_items
 
     # 若整段都是「一行一条」竖线格式，优先按行解析
     lines_all = [ln.strip() for ln in text.split("\n") if ln.strip()]
