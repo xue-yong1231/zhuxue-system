@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ question.title }} · 助学题库{% endblock %}
+
+{% block content %}
+<article class="detail">
+  <a class="back-link" href="{{ url_for('main.index') }}">← 返回题目广场</a>
+  <div class="question-meta">
+    <span class="tag">{{ question.subject }}</span>
+    <span class="tag tag-muted">{{ question.difficulty }}</span>
+  </div>
+  <h1>{{ question.title }}</h1>
+  <section class="panel">
+    <h2>题干</h2>
+    <div class="prose">{{ question.content | e | replace('\n', '<br>') | safe }}</div>
+  </section>
+
+  {% if question.answer %}
+  <details class="panel reveal">
+    <summary>查看参考答案</summary>
+    <div class="prose">{{ question.answer | e | replace('\n', '<br>') | safe }}</div>
+  </details>
+  {% endif %}
+
+  {% if question.analysis %}
+  <details class="panel reveal" open>
+    <summary>解析与思路</summary>
+    <div class="prose">{{ question.analysis | e | replace('\n', '<br>') | safe }}</div>
+  </details>
+  {% endif %}
+
+  {% if current_user.is_authenticated and current_user.is_admin %}
+  <div class="detail-actions">
+    <a class="btn" href="{{ url_for('admin.question_edit', question_id=question.id) }}">编辑本题</a>
+  </div>
+  {% endif %}
+</article>
+{% endblock %}

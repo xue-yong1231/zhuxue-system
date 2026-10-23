@@ -1,0 +1,24 @@
+# Render 一键部署蓝图（https://render.com）
+# 部署后会得到类似 https://xxx.onrender.com 的公网地址，全球可访问。
+services:
+  - type: web
+    name: zhuxue-system
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "run:app" --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: FORCE_HTTPS
+        value: "true"
+      # 可选：在 Render 控制台绑定免费/外部 PostgreSQL 后填入 DATABASE_URL
+      # - key: DATABASE_URL
+      #   fromDatabase:
+      #     name: zhuxue-db
+      #     property: connectionString

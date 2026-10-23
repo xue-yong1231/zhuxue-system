@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'create' %}新建题目{% else %}编辑题目{% endif %} · 助学题库{% endblock %}
+
+{% block content %}
+<section class="form-page">
+  <a class="back-link" href="{{ url_for('admin.dashboard') }}">← 返回管理后台</a>
+  <h1>{% if mode == 'create' %}新建题目{% else %}编辑题目{% endif %}</h1>
+
+  <form method="post" class="stack-form wide-form">
+    <label>
+      标题
+      <input type="text" name="title" required maxlength="200"
+             value="{{ question.title if question else '' }}"
+             placeholder="例如：一元二次方程求根">
+    </label>
+
+    <div class="form-row">
+      <label>
+        科目
+        <input type="text" name="subject" maxlength="50"
+               value="{{ question.subject if question else '综合' }}"
+               placeholder="数学 / 英语 / 物理…">
+      </label>
+      <label>
+        难度
+        <select name="difficulty">
+          {% set d = question.difficulty if question else '中等' %}
+          <option value="简单" {% if d == '简单' %}selected{% endif %}>简单</option>
+          <option value="中等" {% if d == '中等' %}selected{% endif %}>中等</option>
+          <option value="困难" {% if d == '困难' %}selected{% endif %}>困难</option>
+        </select>
+      </label>
+    </div>
+
+    <label>
+      题干
+      <textarea name="content" rows="8" required placeholder="输入完整题目内容…">{{ question.content if question else '' }}</textarea>
+    </label>
+
+    <label>
+      参考答案
+      <textarea name="answer" rows="4" placeholder="可选，访客可在详情页展开查看">{{ question.answer if question else '' }}</textarea>
+    </label>
+
+    <label>
+      解析与思路
+      <textarea name="analysis" rows="5" placeholder="可选，帮助学习者理解解题过程">{{ question.analysis if question else '' }}</textarea>
+    </label>
+
+    <div class="form-actions">
+      <button type="submit" class="btn">保存</button>
+      <a class="btn btn-ghost" href="{{ url_for('admin.dashboard') }}">取消</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

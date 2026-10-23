@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}无权限 · 助学题库{% endblock %}
+{% block content %}
+<section class="empty-state">
+  <h1>403</h1>
+  <p>你没有权限访问该页面。请使用管理员账号登录。</p>
+  <a class="btn" href="{{ url_for('auth.login') }}">去登录</a>
+</section>
+{% endblock %}

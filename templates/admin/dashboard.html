@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}管理后台 · 助学题库{% endblock %}
+
+{% block content %}
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Admin</p>
+    <h1>题目管理</h1>
+    <p class="muted">在此创建、编辑或删除题目。公开访客只能浏览，无法修改。</p>
+  </div>
+  <a class="btn" href="{{ url_for('admin.question_create') }}">新建题目</a>
+</section>
+
+<section class="admin-table-wrap">
+  {% if questions %}
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>标题</th>
+        <th>科目</th>
+        <th>难度</th>
+        <th>更新时间</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for q in questions %}
+      <tr>
+        <td>
+          <a href="{{ url_for('main.question_detail', question_id=q.id) }}">{{ q.title }}</a>
+        </td>
+        <td>{{ q.subject }}</td>
+        <td>{{ q.difficulty }}</td>
+        <td>{{ q.updated_at.strftime('%Y-%m-%d %H:%M') if q.updated_at else '-' }}</td>
+        <td class="actions">
+          <a href="{{ url_for('admin.question_edit', question_id=q.id) }}">编辑</a>
+          <form method="post" action="{{ url_for('admin.question_delete', question_id=q.id) }}" onsubmit="return confirm('确认删除该题目？');">
+            <button type="submit" class="link-danger">删除</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <h2>还没有题目</h2>
+    <p>点击右上角「新建题目」开始录入。</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

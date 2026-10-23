@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}登录 · 助学题库{% endblock %}
+
+{% block content %}
+<section class="auth-wrap">
+  <div class="auth-card">
+    <h1>管理员登录</h1>
+    <p class="muted">使用预置管理员账号进入后台，管理题目的录入与修改。</p>
+    <form method="post" class="stack-form">
+      <label>
+        用户名
+        <input type="text" name="username" required autocomplete="username" placeholder="admin">
+      </label>
+      <label>
+        密码
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn btn-block">登录</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
