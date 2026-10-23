@@ -15,13 +15,24 @@ login_manager.login_message_category = "warning"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+DEFAULT_SUBJECTS = [
+    ("语文", "chinese"),
+    ("数学", "math"),
+    ("英文", "english"),
+    ("物理", "physics"),
+    ("化学", "chemistry"),
+    ("生物", "biology"),
+    ("电脑", "computer"),
+    ("地理", "geography"),
+    ("历史", "history"),
+]
+
 
 def _database_uri() -> str:
     """优先使用云平台提供的 DATABASE_URL（PostgreSQL），否则用本地 SQLite。"""
     url = (os.getenv("DATABASE_URL") or "").strip()
     if not url:
         return f"sqlite:///{BASE_DIR / 'data.db'}"
-    # Heroku / Render 等有时给出 postgres://，SQLAlchemy 需要 postgresql://
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://") :]
     return url
@@ -41,7 +52,6 @@ def create_app() -> Flask:
     app.config["ADMIN_USERNAME"] = os.getenv("ADMIN_USERNAME", "admin")
     app.config["ADMIN_PASSWORD"] = os.getenv("ADMIN_PASSWORD", "admin123")
 
-    # 部署在 HTTPS 反向代理后时，正确识别协议与客户端 IP
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     if os.getenv("FORCE_HTTPS", "").lower() in {"1", "true", "yes"}:
@@ -74,13 +84,13 @@ def create_app() -> Flask:
     with app.app_context():
         db.create_all()
         _ensure_admin(app)
-        _seed_sample_questions()
+        _seed_subjects()
+        _seed_demo_content()
 
     return app
 
 
 def _ensure_admin(app: Flask) -> None:
-    """仅在系统中尚无管理员时，用环境变量预置一个；之后以数据库为准，避免覆盖用户自行修改的账号密码。"""
     from app.models import User
 
     if User.query.filter_by(role="admin").first() is not None:
@@ -99,29 +109,72 @@ def _ensure_admin(app: Flask) -> None:
     db.session.commit()
 
 
-def _seed_sample_questions() -> None:
-    from app.models import Question
+def _seed_subjects() -> None:
+    from app.models import Subject
 
-    if Question.query.count() > 0:
+    for index, (name, slug) in enumerate(DEFAULT_SUBJECTS):
+        subject = Subject.query.filter_by(slug=slug).first()
+        if subject is None:
+            db.session.add(Subject(name=name, slug=slug, sort_order=index))
+        else:
+            subject.name = name
+            subject.sort_order = index
+    db.session.commit()
+
+
+def _seed_demo_content() -> None:
+    """首次启动时给语文放一点示例，方便立刻体验流程。"""
+    from app.models import LearnCategory, LearnItem, PracticeQuestion, Subject
+
+    chinese = Subject.query.filter_by(slug="chinese").first()
+    if chinese is None:
+        return
+    if LearnCategory.query.filter_by(subject_id=chinese.id).count() > 0:
         return
 
-    samples = [
-        Question(
-            title="解方程：2x + 6 = 18",
-            subject="数学",
-            difficulty="简单",
-            content="求 x 的值：2x + 6 = 18。请写出主要步骤。",
-            answer="x = 6",
-            analysis="两边同时减去 6，得到 2x = 12；再两边同时除以 2，得到 x = 6。",
-        ),
-        Question(
-            title="阅读理解：主旨概括",
-            subject="英语",
-            difficulty="中等",
-            content="短文大意：A student prepares for an exam by making a study plan and reviewing notes daily.\n问：这段文字主要说明了什么？",
-            answer="制定学习计划并每天复习，有助于备考。",
-            analysis="抓住关键词 study plan、reviewing notes，归纳作者强调的学习方法即可。",
-        ),
-    ]
-    db.session.add_all(samples)
+    mingju = LearnCategory(subject_id=chinese.id, name="名句", sort_order=0)
+    changshi = LearnCategory(subject_id=chinese.id, name="文学常识", sort_order=1)
+    db.session.add_all([mingju, changshi])
+    db.session.flush()
+
+    db.session.add_all(
+        [
+            LearnItem(
+                category_id=mingju.id,
+                content="学而时习之，不亦说乎？",
+                translation="学过的知识按时温习，不也是很愉快的吗？",
+                explanation="出自《论语·学而》。强调复习与实践的重要性。",
+                sort_order=0,
+            ),
+            LearnItem(
+                category_id=mingju.id,
+                content="三人行，必有我师焉。",
+                translation="几个人一起走路，其中一定有可以做我老师的人。",
+                explanation="出自《论语·述而》。提醒我们虚心向他人学习。",
+                sort_order=1,
+            ),
+            LearnItem(
+                category_id=changshi.id,
+                content="《红楼梦》的作者是谁？",
+                translation="曹雪芹（前八十回），高鹗续写后四十回（通行说法）。",
+                explanation="中国古典四大名著之一，清代长篇小说。",
+                sort_order=0,
+            ),
+        ]
+    )
+
+    if PracticeQuestion.query.filter_by(subject_id=chinese.id).count() == 0:
+        db.session.add(
+            PracticeQuestion(
+                subject_id=chinese.id,
+                stem="“学而时习之，不亦说乎？”出自哪部著作？",
+                option_a="《孟子》",
+                option_b="《论语》",
+                option_c="《大学》",
+                option_d="《中庸》",
+                correct="B",
+                explanation="这是《论语·学而》中的名句。",
+            )
+        )
+
     db.session.commit()

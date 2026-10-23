@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'create' %}添加内容{% else %}编辑内容{% endif %} · {{ category.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('admin.item_list', category_id=category.id) }}">← 返回内容列表</a>
+<section class="form-page">
+  <h1>{% if mode == 'create' %}添加学习内容{% else %}编辑学习内容{% endif %}</h1>
+  <p class="muted">{{ subject.name }} · {{ category.name }}</p>
+  <form method="post" class="stack-form wide-form">
+    <label>
+      正文（名句 / 知识点正文）
+      <textarea name="content" rows="4" required placeholder="例如：学而时习之，不亦说乎？">{{ item.content if item else '' }}</textarea>
+    </label>
+    <label>
+      翻译
+      <textarea name="translation" rows="3" placeholder="白话翻译或对应译文">{{ item.translation if item else '' }}</textarea>
+    </label>
+    <label>
+      解释
+      <textarea name="explanation" rows="4" placeholder="出处、用法、记忆要点等">{{ item.explanation if item else '' }}</textarea>
+    </label>
+    <label>
+      排序（数字越小越靠前）
+      <input type="number" name="sort_order" value="{{ item.sort_order if item else 0 }}">
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="btn">保存</button>
+      <a class="btn btn-ghost" href="{{ url_for('admin.item_list', category_id=category.id) }}">取消</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

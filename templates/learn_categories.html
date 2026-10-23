@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}学习 · {{ subject.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('main.subject_home', slug=subject.slug) }}">← 返回 {{ subject.name }}</a>
+<section class="hero">
+  <p class="eyebrow">{{ subject.name }} · 学习</p>
+  <h1>选择分类</h1>
+  <p class="lead">点进分类后，将一页一条展示内容，下方有翻译与解释。</p>
+</section>
+
+{% if categories %}
+<section class="category-list">
+  {% for c in categories %}
+  <a class="category-row" href="{{ url_for('main.learn_view', slug=subject.slug, category_id=c.id) }}">
+    <h2>{{ c.name }}</h2>
+    <p>{{ c.items|length }} 条内容</p>
+  </a>
+  {% endfor %}
+</section>
+{% else %}
+<div class="empty-state">
+  <h2>暂无学习分类</h2>
+  <p>请房主登录后台，在「{{ subject.name }}」下创建分类（如名句、文学常识）并添加内容。</p>
+</div>
+{% endif %}
+{% endblock %}

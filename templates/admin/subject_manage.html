@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}管理 · {{ subject.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('admin.dashboard') }}">← 返回科目列表</a>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">管理</p>
+    <h1>{{ subject.name }}</h1>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('main.subject_home', slug=subject.slug) }}" target="_blank">预览前台</a>
+</section>
+
+<section class="admin-section">
+  <div class="admin-section-head">
+    <h2>学习分类</h2>
+    <a class="btn btn-small" href="{{ url_for('admin.category_create', subject_id=subject.id) }}">新建分类</a>
+  </div>
+  {% if categories %}
+  <table class="admin-table">
+    <thead>
+      <tr><th>名称</th><th>条目数</th><th>排序</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+      {% for c in categories %}
+      <tr>
+        <td>{{ c.name }}</td>
+        <td>{{ c.items|length }}</td>
+        <td>{{ c.sort_order }}</td>
+        <td class="actions">
+          <a href="{{ url_for('admin.item_list', category_id=c.id) }}">管理内容</a>
+          <a href="{{ url_for('admin.category_edit', category_id=c.id) }}">编辑</a>
+          <form method="post" action="{{ url_for('admin.category_delete', category_id=c.id) }}" onsubmit="return confirm('删除分类会同时删除其中所有学习内容，确认？');">
+            <button type="submit" class="link-danger">删除</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">还没有分类。例如语文可建「名句」「文学常识」。</p>
+  {% endif %}
+</section>
+
+<section class="admin-section">
+  <div class="admin-section-head">
+    <h2>练习题（四选一）</h2>
+    <a class="btn btn-small" href="{{ url_for('admin.practice_create', subject_id=subject.id) }}">新建练习题</a>
+  </div>
+  {% if practices %}
+  <table class="admin-table">
+    <thead>
+      <tr><th>题干</th><th>答案</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+      {% for q in practices %}
+      <tr>
+        <td>{{ q.stem[:60] }}{% if q.stem|length > 60 %}…{% endif %}</td>
+        <td>{{ q.correct }}</td>
+        <td class="actions">
+          <a href="{{ url_for('admin.practice_edit', question_id=q.id) }}">编辑</a>
+          <form method="post" action="{{ url_for('admin.practice_delete', question_id=q.id) }}" onsubmit="return confirm('确认删除该题？');">
+            <button type="submit" class="link-danger">删除</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">还没有练习题。</p>
+  {% endif %}
+</section>
+{% endblock %}

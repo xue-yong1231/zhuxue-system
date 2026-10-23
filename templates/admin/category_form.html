@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'create' %}新建分类{% else %}编辑分类{% endif %} · {{ subject.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('admin.subject_manage', subject_id=subject.id) }}">← 返回 {{ subject.name }}</a>
+<section class="form-page">
+  <h1>{% if mode == 'create' %}新建学习分类{% else %}编辑学习分类{% endif %}</h1>
+  <form method="post" class="stack-form wide-form">
+    <label>
+      分类名称
+      <input type="text" name="name" required maxlength="80"
+             value="{{ category.name if category else '' }}"
+             placeholder="例如：名句、文学常识、文言文">
+    </label>
+    <label>
+      排序（数字越小越靠前）
+      <input type="number" name="sort_order" value="{{ category.sort_order if category else 0 }}">
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="btn">保存</button>
+      <a class="btn btn-ghost" href="{{ url_for('admin.subject_manage', subject_id=subject.id) }}">取消</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

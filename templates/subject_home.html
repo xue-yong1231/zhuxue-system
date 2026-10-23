@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ subject.name }} · 助学题库{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('main.index') }}">← 返回科目广场</a>
+<section class="hero">
+  <p class="eyebrow">科目</p>
+  <h1>{{ subject.name }}</h1>
+  <p class="lead">请选择学习知识，或做选择题练习。</p>
+</section>
+
+<section class="mode-grid">
+  <a class="mode-card" href="{{ url_for('main.learn_categories', slug=subject.slug) }}">
+    <h2>学习</h2>
+    <p>按分类浏览知识（如名句、文学常识），一页一条，可翻到下一条。</p>
+  </a>
+  <a class="mode-card" href="{{ url_for('main.practice_home', slug=subject.slug) }}">
+    <h2>练习</h2>
+    <p>四选一选择题。房主出题并设置正确答案与干扰选项。</p>
+  </a>
+</section>
+{% endblock %}

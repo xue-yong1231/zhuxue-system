@@ -462,10 +462,242 @@ textarea {
   }
 }
 
+.subject-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.9rem;
+  animation: rise 0.55s ease both;
+}
+
+.subject-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.2rem;
+  min-height: 120px;
+  padding: 1.15rem 1.1rem;
+  background: var(--card);
+  border: 1px solid rgba(201, 215, 230, 0.9);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.subject-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(13, 115, 119, 0.45);
+  text-decoration: none;
+}
+
+.subject-name {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+}
+
+.subject-hint {
+  color: var(--teal);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.mode-card {
+  display: block;
+  padding: 1.4rem 1.3rem;
+  background: var(--card);
+  border: 1px solid rgba(201, 215, 230, 0.9);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.mode-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(13, 115, 119, 0.45);
+  text-decoration: none;
+}
+
+.mode-card h2 {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 400;
+}
+
+.mode-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.category-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.category-row {
+  display: block;
+  padding: 1.1rem 1.2rem;
+  background: var(--card);
+  border: 1px solid rgba(201, 215, 230, 0.9);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  color: inherit;
+  text-decoration: none;
+}
+
+.category-row:hover {
+  border-color: rgba(13, 115, 119, 0.45);
+  text-decoration: none;
+}
+
+.category-row h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.2rem;
+}
+
+.category-row p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.learn-card,
+.practice-card {
+  background: var(--card);
+  border: 1px solid rgba(201, 215, 230, 0.9);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem 1.4rem 1.6rem;
+  animation: rise 0.45s ease both;
+}
+
+.learn-progress {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+.learn-content {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.5vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0 0 1.2rem;
+}
+
+.learn-block {
+  margin: 1rem 0;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+}
+
+.learn-block h2 {
+  margin: 0 0 0.45rem;
+  font-size: 0.95rem;
+  color: var(--teal-deep);
+}
+
+.learn-block p {
+  margin: 0;
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.learn-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-top: 1.4rem;
+  flex-wrap: wrap;
+}
+
+.btn-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.practice-stem {
+  font-size: 1.25rem;
+  line-height: 1.7;
+  margin: 0 0 1.1rem;
+}
+
+.option-form,
+.option-review {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.option-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.option-row input {
+  width: auto;
+  margin-top: 0.25rem;
+}
+
+.option-row.is-correct {
+  border-color: rgba(13, 115, 119, 0.5);
+  background: rgba(13, 115, 119, 0.08);
+}
+
+.option-row.is-wrong {
+  border-color: rgba(180, 35, 24, 0.4);
+  background: rgba(180, 35, 24, 0.08);
+}
+
+.admin-section {
+  background: var(--card);
+  border: 1px solid rgba(201, 215, 230, 0.9);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.15rem 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.admin-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.admin-section-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.wide-form {
+  max-width: 640px;
+}
+
+.form-page h1 {
+  margin-bottom: 0.4rem;
+}
+
 @media (max-width: 720px) {
   .search-form,
   .form-row,
-  .admin-header {
+  .admin-header,
+  .mode-grid {
     grid-template-columns: 1fr;
     display: grid;
   }

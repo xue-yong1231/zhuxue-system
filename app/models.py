@@ -30,17 +30,91 @@ class User(UserMixin, db.Model):
         return self.role == "admin"
 
 
-class Question(db.Model):
-    __tablename__ = "questions"
+class Subject(db.Model):
+    __tablename__ = "subjects"
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    subject = db.Column(db.String(50), nullable=False, default="综合")
-    difficulty = db.Column(db.String(20), nullable=False, default="中等")
+    name = db.Column(db.String(40), unique=True, nullable=False)
+    slug = db.Column(db.String(40), unique=True, nullable=False, index=True)
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+
+    categories = db.relationship(
+        "LearnCategory",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+        order_by="LearnCategory.sort_order",
+    )
+    practices = db.relationship(
+        "PracticeQuestion",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+        order_by="PracticeQuestion.id",
+    )
+
+
+class LearnCategory(db.Model):
+    __tablename__ = "learn_categories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey("subjects.id"), nullable=False)
+    name = db.Column(db.String(80), nullable=False)
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+
+    subject = db.relationship("Subject", back_populates="categories")
+    items = db.relationship(
+        "LearnItem",
+        back_populates="category",
+        cascade="all, delete-orphan",
+        order_by="LearnItem.sort_order",
+    )
+
+
+class LearnItem(db.Model):
+    """学习内容：一页一条（如名句 + 翻译 + 解释）。"""
+
+    __tablename__ = "learn_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    category_id = db.Column(
+        db.Integer, db.ForeignKey("learn_categories.id"), nullable=False
+    )
     content = db.Column(db.Text, nullable=False)
-    answer = db.Column(db.Text, nullable=False, default="")
-    analysis = db.Column(db.Text, nullable=False, default="")
+    translation = db.Column(db.Text, nullable=False, default="")
+    explanation = db.Column(db.Text, nullable=False, default="")
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime, default=utcnow, nullable=False)
     updated_at = db.Column(
         db.DateTime, default=utcnow, onupdate=utcnow, nullable=False
     )
+
+    category = db.relationship("LearnCategory", back_populates="items")
+
+
+class PracticeQuestion(db.Model):
+    """练习：四选一选择题。"""
+
+    __tablename__ = "practice_questions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey("subjects.id"), nullable=False)
+    stem = db.Column(db.Text, nullable=False)
+    option_a = db.Column(db.String(500), nullable=False)
+    option_b = db.Column(db.String(500), nullable=False)
+    option_c = db.Column(db.String(500), nullable=False)
+    option_d = db.Column(db.String(500), nullable=False)
+    correct = db.Column(db.String(1), nullable=False, default="A")  # A/B/C/D
+    explanation = db.Column(db.Text, nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=utcnow, nullable=False)
+    updated_at = db.Column(
+        db.DateTime, default=utcnow, onupdate=utcnow, nullable=False
+    )
+
+    subject = db.relationship("Subject", back_populates="practices")
+
+    def options(self) -> list[tuple[str, str]]:
+        return [
+            ("A", self.option_a),
+            ("B", self.option_b),
+            ("C", self.option_c),
+            ("D", self.option_d),
+        ]

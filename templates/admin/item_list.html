@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }} · 学习内容{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('admin.subject_manage', subject_id=subject.id) }}">← 返回 {{ subject.name }}</a>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">{{ subject.name }} · {{ category.name }}</p>
+    <h1>学习内容</h1>
+    <p class="muted">学生将一页一条看到这些内容，下方显示翻译与解释。</p>
+  </div>
+  <a class="btn" href="{{ url_for('admin.item_create', category_id=category.id) }}">添加内容</a>
+</section>
+
+{% if items %}
+<table class="admin-table">
+  <thead>
+    <tr><th>正文摘要</th><th>排序</th><th>操作</th></tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+    <tr>
+      <td>{{ item.content[:80] }}{% if item.content|length > 80 %}…{% endif %}</td>
+      <td>{{ item.sort_order }}</td>
+      <td class="actions">
+        <a href="{{ url_for('admin.item_edit', item_id=item.id) }}">编辑</a>
+        <form method="post" action="{{ url_for('admin.item_delete', item_id=item.id) }}" onsubmit="return confirm('确认删除？');">
+          <button type="submit" class="link-danger">删除</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+  <h2>还没有内容</h2>
+  <p>点击右上角「添加内容」开始录入。</p>
+</div>
+{% endif %}
+{% endblock %}

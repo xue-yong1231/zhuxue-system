@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}练习 {{ index }}/{{ total }} · {{ subject.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('main.practice_home', slug=subject.slug) }}">← 返回练习首页</a>
+
+<article class="practice-card">
+  <div class="learn-progress">第 {{ index }} / {{ total }} 题</div>
+  <h1 class="practice-stem">{{ question.stem }}</h1>
+
+  {% if result is none %}
+  <form method="post" class="option-form">
+    {% for key, text in question.options() %}
+    <label class="option-row">
+      <input type="radio" name="answer" value="{{ key }}" required>
+      <span><strong>{{ key }}.</strong> {{ text }}</span>
+    </label>
+    {% endfor %}
+    <button type="submit" class="btn">提交答案</button>
+  </form>
+  {% else %}
+  <div class="option-review">
+    {% for key, text in question.options() %}
+    <div class="option-row
+      {% if key == question.correct %}is-correct{% endif %}
+      {% if chosen == key and result == false %}is-wrong{% endif %}
+    ">
+      <strong>{{ key }}.</strong> {{ text }}
+      {% if key == question.correct %}<span class="tag">正确答案</span>{% endif %}
+      {% if chosen == key and result == false %}<span class="tag tag-muted">你的选择</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="flash {% if result %}flash-success{% else %}flash-danger{% endif %}" style="margin-top:1rem;">
+    {% if result %}回答正确！{% else %}回答错误，正确答案是 {{ question.correct }}。{% endif %}
+  </div>
+
+  {% if question.explanation %}
+  <section class="learn-block">
+    <h2>解析</h2>
+    <p>{{ question.explanation | e | replace('\n', '<br>') | safe }}</p>
+  </section>
+  {% endif %}
+
+  <div class="learn-nav">
+    {% if prev_id %}
+    <a class="btn btn-ghost" href="{{ url_for('main.practice_question', slug=subject.slug, question_id=prev_id) }}">上一题</a>
+    {% endif %}
+    {% if next_id %}
+    <a class="btn" href="{{ url_for('main.practice_question', slug=subject.slug, question_id=next_id) }}">下一题</a>
+    {% else %}
+    <a class="btn" href="{{ url_for('main.practice_home', slug=subject.slug) }}">完成练习</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</article>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'create' %}新建练习题{% else %}编辑练习题{% endif %} · {{ subject.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('admin.subject_manage', subject_id=subject.id) }}">← 返回 {{ subject.name }}</a>
+<section class="form-page">
+  <h1>{% if mode == 'create' %}新建练习题{% else %}编辑练习题{% endif %}</h1>
+  <p class="muted">四选一：填写题干、四个选项，并指定正确答案。</p>
+  <form method="post" class="stack-form wide-form">
+    <label>
+      题干
+      <textarea name="stem" rows="4" required placeholder="请输入题目…">{{ question.stem if question else '' }}</textarea>
+    </label>
+    <label>选项 A<input type="text" name="option_a" required maxlength="500" value="{{ question.option_a if question else '' }}"></label>
+    <label>选项 B<input type="text" name="option_b" required maxlength="500" value="{{ question.option_b if question else '' }}"></label>
+    <label>选项 C<input type="text" name="option_c" required maxlength="500" value="{{ question.option_c if question else '' }}"></label>
+    <label>选项 D<input type="text" name="option_d" required maxlength="500" value="{{ question.option_d if question else '' }}"></label>
+    <label>
+      正确答案
+      {% set c = question.correct if question else 'A' %}
+      <select name="correct">
+        <option value="A" {% if c == 'A' %}selected{% endif %}>A</option>
+        <option value="B" {% if c == 'B' %}selected{% endif %}>B</option>
+        <option value="C" {% if c == 'C' %}selected{% endif %}>C</option>
+        <option value="D" {% if c == 'D' %}selected{% endif %}>D</option>
+      </select>
+    </label>
+    <label>
+      解析（可选）
+      <textarea name="explanation" rows="3">{{ question.explanation if question else '' }}</textarea>
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="btn">保存</button>
+      <a class="btn btn-ghost" href="{{ url_for('admin.subject_manage', subject_id=subject.id) }}">取消</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

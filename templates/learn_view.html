@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }} · {{ subject.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('main.learn_categories', slug=subject.slug) }}">← 返回分类</a>
+
+{% if not item %}
+<div class="empty-state">
+  <h2>「{{ category.name }}」还没有内容</h2>
+  <p>请房主在后台添加学习条目。</p>
+</div>
+{% else %}
+<article class="learn-card">
+  <div class="learn-progress">{{ category.name }} · {{ page }} / {{ total }}</div>
+  <h1 class="learn-content">{{ item.content }}</h1>
+
+  {% if item.translation %}
+  <section class="learn-block">
+    <h2>翻译</h2>
+    <p>{{ item.translation | e | replace('\n', '<br>') | safe }}</p>
+  </section>
+  {% endif %}
+
+  {% if item.explanation %}
+  <section class="learn-block">
+    <h2>解释</h2>
+    <p>{{ item.explanation | e | replace('\n', '<br>') | safe }}</p>
+  </section>
+  {% endif %}
+
+  <div class="learn-nav">
+    {% if has_prev %}
+    <a class="btn btn-ghost" href="{{ url_for('main.learn_view', slug=subject.slug, category_id=category.id, page=page-1) }}">上一页</a>
+    {% else %}
+    <span class="btn btn-ghost btn-disabled">上一页</span>
+    {% endif %}
+
+    {% if has_next %}
+    <a class="btn" href="{{ url_for('main.learn_view', slug=subject.slug, category_id=category.id, page=page+1) }}">下一页</a>
+    {% else %}
+    <span class="btn btn-ghost btn-disabled">已是最后一页</span>
+    {% endif %}
+  </div>
+</article>
+{% endif %}
+{% endblock %}

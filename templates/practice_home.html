@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}练习 · {{ subject.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{{ url_for('main.subject_home', slug=subject.slug) }}">← 返回 {{ subject.name }}</a>
+<section class="hero">
+  <p class="eyebrow">{{ subject.name }} · 练习</p>
+  <h1>选择题练习</h1>
+  <p class="lead">共 {{ total }} 道题。每题四个选项，选完后会显示对错与解析。</p>
+</section>
+
+{% if total > 0 %}
+<a class="btn" href="{{ url_for('main.practice_start', slug=subject.slug) }}">开始练习</a>
+{% else %}
+<div class="empty-state">
+  <h2>暂无练习题</h2>
+  <p>请房主登录后台，在「{{ subject.name }}」下添加四选一题目。</p>
+</div>
+{% endif %}
+{% endblock %}
